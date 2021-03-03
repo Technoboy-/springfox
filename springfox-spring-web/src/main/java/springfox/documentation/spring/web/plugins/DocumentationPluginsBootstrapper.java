@@ -173,6 +173,11 @@ public class DocumentationPluginsBootstrapper implements SmartLifecycle {
     }
   }
 
+  public void restart(){
+    initialized.getAndSet(false);
+    start();
+  }
+
   @Override
   public void stop() {
     initialized.getAndSet(false);

@@ -22,6 +22,8 @@ package springfox.documentation.swagger2.web;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import io.swagger.models.Swagger;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,8 @@ public class Swagger2Controller {
   private final ServiceModelToSwagger2Mapper mapper;
   private final JsonSerializer jsonSerializer;
 
+  private final Map<String, String> swaggerDocs = new ConcurrentHashMap<String, String>();
+
   @Autowired
   public Swagger2Controller(
       Environment environment,
@@ -93,8 +97,13 @@ public class Swagger2Controller {
     String groupName = Optional.fromNullable(swaggerGroup).or(Docket.DEFAULT_GROUP_NAME);
     Documentation documentation = documentationCache.documentationByGroup(groupName);
     if (documentation == null) {
-      LOGGER.warn("Unable to find specification for group {}", groupName);
-      return new ResponseEntity<Json>(HttpStatus.NOT_FOUND);
+      String swaggerDoc = swaggerDocs.get(groupName);
+      if(swaggerDoc == null){
+        LOGGER.warn("Unable to find specification for group {}", groupName);
+        return new ResponseEntity<Json>(HttpStatus.NOT_FOUND);
+      } else{
+        return new ResponseEntity<Json>(new Json(swaggerDoc), HttpStatus.OK);
+      }
     }
     Swagger swagger = mapper.mapDocumentation(documentation);
     UriComponents uriComponents = componentsFrom(servletRequest, swagger.getBasePath());
@@ -103,6 +112,10 @@ public class Swagger2Controller {
       swagger.host(hostName(uriComponents));
     }
     return new ResponseEntity<Json>(jsonSerializer.toJson(swagger), HttpStatus.OK);
+  }
+
+  public void addSwaggerDoc(String group, String swaggerDoc){
+    swaggerDocs.put(group, swaggerDoc);
   }
 
   private String hostName(UriComponents uriComponents) {

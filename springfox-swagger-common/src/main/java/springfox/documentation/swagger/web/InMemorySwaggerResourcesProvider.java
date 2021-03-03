@@ -20,6 +20,7 @@ package springfox.documentation.swagger.web;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import java.util.LinkedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,8 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
   boolean swagger2Available;
 
   private final DocumentationCache documentationCache;
+
+  private final List<SwaggerResource> otherResources = new LinkedList<SwaggerResource>();
 
   @Autowired
   public InMemorySwaggerResourcesProvider(
@@ -75,11 +78,18 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
         resources.add(swaggerResource);
       }
     }
+    if(!otherResources.isEmpty()){
+      resources.addAll(otherResources);
+    }
     Collections.sort(resources);
     return resources;
   }
 
-  private SwaggerResource resource(String swaggerGroup, String baseUrl) {
+  public void addResources(List<SwaggerResource> resources){
+    otherResources.addAll(resources);
+  }
+
+  public SwaggerResource resource(String swaggerGroup, String baseUrl) {
     SwaggerResource swaggerResource = new SwaggerResource();
     swaggerResource.setName(swaggerGroup);
     swaggerResource.setUrl(swaggerLocation(baseUrl, swaggerGroup));

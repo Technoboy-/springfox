@@ -19,10 +19,12 @@
 package springfox.documentation.spring.web.plugins;
 
 import com.google.common.base.Function;
+import java.util.LinkedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
@@ -44,6 +46,8 @@ public class WebMvcRequestHandlerProvider implements RequestHandlerProvider {
   private final List<RequestMappingInfoHandlerMapping> handlerMappings;
   private final HandlerMethodResolver methodResolver;
 
+  private List<RequestHandler> extRequestHandlers = new LinkedList<RequestHandler>();
+
   @Autowired
   public WebMvcRequestHandlerProvider(
       HandlerMethodResolver methodResolver,
@@ -54,9 +58,19 @@ public class WebMvcRequestHandlerProvider implements RequestHandlerProvider {
 
   @Override
   public List<RequestHandler> requestHandlers() {
-    return byPatternsCondition().sortedCopy(from(nullToEmptyList(handlerMappings))
-        .transformAndConcat(toMappingEntries())
-        .transform(toRequestHandler()));
+    List<RequestHandler> requestHandlers = byPatternsCondition()
+        .sortedCopy(from(nullToEmptyList(handlerMappings))
+            .transformAndConcat(toMappingEntries())
+            .transform(toRequestHandler()));
+    if(!CollectionUtils.isEmpty(extRequestHandlers)){
+      requestHandlers.addAll(extRequestHandlers);
+    }
+
+    return requestHandlers;
+  }
+
+  public void addRequestHandlers(List<RequestHandler> requestHandlers){
+    this.extRequestHandlers.addAll(requestHandlers);
   }
 
   private Function<? super RequestMappingInfoHandlerMapping,
