@@ -20,6 +20,7 @@ package springfox.documentation.swagger.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -71,6 +72,25 @@ public class SwaggerResource implements Comparable<SwaggerResource> {
 
   public void setSwaggerVersion(String swaggerVersion) {
     this.swaggerVersion = swaggerVersion;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SwaggerResource that = (SwaggerResource) o;
+    return Objects.equal(getName(), that.getName()) &&
+        Objects.equal(getUrl(), that.getUrl()) &&
+        Objects.equal(getSwaggerVersion(), that.getSwaggerVersion());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getName(), getUrl(), getSwaggerVersion());
   }
 
   @Override

@@ -48,6 +48,10 @@ public class PropertySourcedRequestMappingHandlerMapping extends RequestMappingH
     this.environment = environment;
     this.handler = handler;
   }
+
+  public Object getDelegateHandler(){
+    return this.handler;
+  }
   
   @Override
   protected void initHandlerMethods() {

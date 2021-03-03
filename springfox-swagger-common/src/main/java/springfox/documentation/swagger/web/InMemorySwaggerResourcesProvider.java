@@ -20,7 +20,9 @@ package springfox.documentation.swagger.web;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -62,7 +64,7 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
 
   @Override
   public List<SwaggerResource> get() {
-    List<SwaggerResource> resources = new ArrayList<SwaggerResource>();
+    Set<SwaggerResource> resources = new HashSet<SwaggerResource>();
 
     for (Map.Entry<String, Documentation> entry : documentationCache.all().entrySet()) {
       String swaggerGroup = entry.getKey();
@@ -81,8 +83,9 @@ public class InMemorySwaggerResourcesProvider implements SwaggerResourcesProvide
     if(!otherResources.isEmpty()){
       resources.addAll(otherResources);
     }
-    Collections.sort(resources);
-    return resources;
+    List<SwaggerResource> result = new ArrayList<SwaggerResource>(resources);
+    Collections.sort(result);
+    return result;
   }
 
   public void addResources(List<SwaggerResource> resources){
